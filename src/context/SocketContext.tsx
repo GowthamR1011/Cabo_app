@@ -5,6 +5,7 @@ import { Socket } from "socket.io-client";
 import { connectSocket, disconnectSocket } from "../utils/socket";
 
 import { SocketContextType } from "../types/SocketContextType";
+import { useRouter } from "next/navigation";
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
@@ -18,6 +19,7 @@ export const useSocket = () => useContext(SocketContext);
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const router = useRouter();
 
   const connectToServer = () => {
     const newSocket = connectSocket();
@@ -25,10 +27,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     // Set up event listeners
     newSocket.on("connect", () => {
       setIsConnected(true);
+      router.push("/game");
     });
 
     newSocket.on("disconnect", () => {
       setIsConnected(false);
+      router.push("/");
     });
 
     setSocket(newSocket);
@@ -36,10 +40,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   const disconnectFromServer = () => {
     if (socket) {
-      socket.off("connect");
-      socket.off("disconnect");
       disconnectSocket();
       setSocket(null);
+      socket.off("connect");
+      socket.off("disconnect");
       setIsConnected(false);
     }
   };
