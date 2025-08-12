@@ -4,7 +4,7 @@ let socket: Socket | null = null;
 
 export const connectSocket = () => {
   if (!socket) {
-    socket = io("ws://localhost:5000", {
+    socket = io("http://localhost:5000", {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,

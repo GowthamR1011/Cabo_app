@@ -10,15 +10,12 @@ export default function Home() {
       <h1 className="text-2xl font-bold">Cabo - Online Card Game</h1>
       <p className="text-lg">Let's Play!</p>
 
-      <>
-        {/* <p className="text-red-500">Not Connected to the server...</p> */}
-        <Button
-          onClick={() => connectToServer()}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Play
-        </Button>
-      </>
+      <Button
+        onClick={() => connectToServer()}
+        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Play
+      </Button>
     </div>
   );
 }
