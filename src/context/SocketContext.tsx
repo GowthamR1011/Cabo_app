@@ -6,42 +6,24 @@ import { connectSocket, disconnectSocket } from "../utils/socket";
 
 import { SocketContextType } from "../types/SocketContextType";
 import { useRouter } from "next/navigation";
-import { Message } from "@/types/Message";
+import React from "react";
 
-export const SocketContext = createContext<SocketContextType>({
+const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
-  messages: [],
   connectToServer: () => {},
   disconnectFromServer: () => {},
-  sendMessage: (message: string) => {},
+  setPlayerName: (name: string) => {},
+  playerName: "",
 });
+
+export const useSocket = () => useContext(SocketContext);
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const addMessage = (message: Message) => {
-    setMessages((prevMessages) => [...prevMessages, message]);
-  };
-
+  const [playerName, setPlayerName] = useState<string>("");
   const router = useRouter();
-  const sendMessage = (message: string) => {
-    if (socket) {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          id: Date.now().toString(),
-          content: message,
-          senderName: "You",
-          timestamp: new Date(),
-        },
-      ]);
-      socket.emit("message", message);
-    }
-  };
 
   const connectToServer = () => {
     const newSocket = connectSocket();
@@ -49,21 +31,12 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     // Set up event listeners
     newSocket.on("connect", () => {
       setIsConnected(true);
-      router.push("/game");
+      router.push("/lobby");
     });
 
     newSocket.on("disconnect", () => {
       setIsConnected(false);
       router.push("/");
-    });
-
-    newSocket.on("message", (message: string) => {
-      addMessage({
-        id: Date.now().toString(),
-        content: message,
-        senderName: "Server",
-        timestamp: new Date(),
-      });
     });
 
     setSocket(newSocket);
@@ -73,7 +46,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     if (socket) {
       disconnectSocket();
       setSocket(null);
-      setMessages([]);
       socket.off("connect");
       socket.off("disconnect");
       setIsConnected(false);
@@ -92,21 +64,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       value={{
         socket,
         isConnected,
-        messages,
         connectToServer,
         disconnectFromServer,
-        sendMessage,
+        playerName,
+        setPlayerName,
       }}
     >
       {children}
     </SocketContext.Provider>
   );
 }
-
-export const useSocket = () => {
-  const context = useContext(SocketContext);
-  if (!context) {
-    throw new Error("useSocket must be used within a SocketProvider");
-  }
-  return context;
-};

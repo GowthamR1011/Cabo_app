@@ -5,6 +5,6 @@ export interface SocketContextType {
   isConnected: boolean;
   connectToServer: Function;
   disconnectFromServer: Function;
-  messages: Message[];
-  sendMessage: Function;
+  playerName: string;
+  setPlayerName: Function;
 }
