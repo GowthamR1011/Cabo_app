@@ -26,7 +26,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const connectToServer = () => {
-    const newSocket = connectSocket();
+    const newSocket = connectSocket(playerName);
 
     // Set up event listeners
     newSocket.on("connect", () => {

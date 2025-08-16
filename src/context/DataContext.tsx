@@ -8,11 +8,13 @@ import React, {
 } from "react";
 import { Message } from "../types/Message";
 import { useSocket } from "./SocketContext";
+import { Room } from "@/types/Room";
 
 interface DataContextType {
   messages: Message[];
   addMessage: (msg: Message) => void;
   setMessages: (msgs: Message[]) => void;
+  rooms: Room[];
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -25,7 +27,7 @@ export const useData = () => {
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
-
+  const [rooms, setRooms] = useState<Room[]>([]);
   const { socket } = useSocket();
 
   // Listen for incoming messages from the server
@@ -43,6 +45,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
   }, [socket]);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleRoomAvailable = (roomList: Room[]) => {
+      setRooms(roomList);
+    };
+    socket.on("rooms:available", handleRoomAvailable);
+    return () => {
+      socket.off("room:available", handleRoomAvailable);
+    };
+  }, [socket]);
   // Send message to server and add locally
   const addMessage = (msg: Message) => {
     setMessages((prev) => [...prev, msg]);
@@ -52,7 +64,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DataContext.Provider value={{ messages, addMessage, setMessages }}>
+    <DataContext.Provider value={{ messages, addMessage, setMessages, rooms }}>
       {children}
     </DataContext.Provider>
   );
